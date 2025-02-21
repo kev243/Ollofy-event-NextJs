@@ -1,10 +1,7 @@
 "use client";
-
 import type React from "react";
-
-import { useState } from "react";
-import { CheckCircle, Tickets } from "lucide-react";
-
+import { useEffect, useState } from "react";
+import { CheckCircle, Loader2, Tickets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,34 +11,85 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-const backgroundStyle2 = `
-  .bg-pattern {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    background-image:
-      linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 2px),
-      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 2px);
-    background-size: 100px 100px; /* Taille des carrés */
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .content {
-    position: relative;
-    z-index: 2;
-  }
-`;
+import { useUser } from "@clerk/nextjs";
+import { checkAndAddUser, createOrganization } from "../actions";
+import { useRouter } from "next/navigation";
+import { backgroundStyle2 } from "@/lib/utils";
 
 export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orgName, setOrgName] = useState("");
+  const [isSuccess, setIsSuccess] = useState(true);
+  const { user } = useUser();
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {};
+  useEffect(() => {
+    // Add user to database if not already present
+    if (
+      user?.primaryEmailAddress?.emailAddress &&
+      user.firstName &&
+      user.lastName
+    ) {
+      checkAndAddUser(
+        user?.primaryEmailAddress?.emailAddress,
+        user?.firstName,
+        user?.lastName
+      );
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const response = await createOrganization(orgName);
+      if (response?.message) {
+        // Reloads the user's data from the Clerk API
+        await user?.reload();
+        setIsSuccess(true);
+      }
+    } catch (error) {
+      console.error("Failed to create organization:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <main
+        className="min-h-screen flex  items-center justify-center"
+        style={{
+          background: "radial-gradient(circle at center, #1E40AF, #000000)",
+        }}
+      >
+        <style>{backgroundStyle2}</style>
+        <div className="bg-pattern"></div>
+        <div className="  content w-full">
+          <Card className="   w-full max-w-md mx-auto">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <CheckCircle className="w-12 h-12 text-green-500" />
+                <CardTitle>Organization Created!</CardTitle>
+                <CardDescription>
+                  Your organization &quot;{orgName}&quot; has been successfully
+                  created.
+                </CardDescription>
+              </div>
+              <Button
+                className="w-full mt-5 "
+                onClick={() => router.push("/dashboard")} // Redirection au Dashboard
+              >
+                Go to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className="min-h-screen flex items-center justify-center"
@@ -63,7 +111,8 @@ export default function OnboardingPage() {
             <CardTitle>Create Organization</CardTitle>
             <CardDescription>
               {/* Get started by creating your organization. */}
-              Start by creating your organization. you can always modify it.
+              Start by creating your organization.You can always change it
+              later.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -72,8 +121,8 @@ export default function OnboardingPage() {
                 <Input
                   id="orgName"
                   placeholder="Enter organization name"
-                  // value={orgName}
-                  // onChange={(e) => setOrgName(e.target.value)}
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
                   required
                   minLength={2}
                   maxLength={50}
@@ -84,7 +133,10 @@ export default function OnboardingPage() {
                 className="w-full"
                 disabled={isSubmitting || orgName.length < 2}
               >
-                {isSubmitting ? "Creating..." : "Create Organization"}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Create Organization
               </Button>
             </form>
           </CardContent>

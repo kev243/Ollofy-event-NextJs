@@ -20,6 +20,9 @@ model Organization {
   connectedAccountId    String? @unique // ID Stripe Connect de l'organisation
   image       String?
   users       User[] // Relation avec les utilisateurs
+  nbrEvents Float @default(0)
+  nbrUsers Float @default(0)
+  plan          Plan @default(FREE)
   events      Event[] // Relation avec les événements
   createdAt   DateTime @default(now())
 }
@@ -31,7 +34,6 @@ model User {
   lastName              String
   email       String   @unique
   profileImage          String?
-  password    String
   role        Role     @default(USER)
   organizationId String?  // Clé étrangère pour le multi-tenant
   organization  Organization? @relation(fields: [organizationId], references: [id])
@@ -144,4 +146,10 @@ enum EventStatus {
   PUBLISHED  // L'événement est visible et actif
   CANCELLED  // L'événement a été annulé
   COMPLETED  // L'événement est terminé
+}
+
+enum Plan {
+  FREE 
+  PRO
+  PREMIUM
 }
