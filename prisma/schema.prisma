@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+///  Table des Organisations (pour le multi-tenant)
+model Organization {
+  id          String  @id @default(uuid())
+  name        String //nom de l'organization
+  connectedAccountId    String? @unique // ID Stripe Connect de l'organisation
+  image       String?
+  users       User[] // Relation avec les utilisateurs
+  events      Event[] // Relation avec les événements
+  createdAt   DateTime @default(now())
+}
+
+///  Table des Utilisateurs
+model User {
+  id          String   @id @default(uuid())
+  firstName             String
+  lastName              String
+  email       String   @unique
+  profileImage          String?
+  password    String
+  role        Role     @default(USER)
+  organizationId String?  // Clé étrangère pour le multi-tenant
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  nbrOrganization Float @default(0)
+  events       Event[] // Les événements créés
+  scans        TicketScan[] // Les scans effectués par l'utilisateur
+  createdAt    DateTime @default(now())
+}
+
+model Customer {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  stripeId     String?   @unique // ID Stripe Checkout pour les paiements
+  tickets      Ticket[]
+  createdAt    DateTime  @default(now())
+}
+
+///  Table des Événements
+model Event {
+  id           String   @id @default(uuid())
+  name         String
+  description  String
+  slug         String
+  url          String // url de l'événement
+  location     String?
+  image        String? //image de l'événement
+  date         DateTime
+  price        Float
+  moreInfo     String? //information supplémentaire de l'événement
+  organizerId  String
+  organizer    User     @relation(fields: [organizerId], references: [id])
+  organizationId String?  // Un événement appartient à une organisation
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  tickets      Ticket[]
+  createdAt    DateTime @default(now())
+}
+
+///  Table des Billets
+model Ticket {
+  id          String   @id @default(uuid())
+  uniqueCode      String    @unique // Code unique pour le QR code/code-barre
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  quantity    Int      // Nombre de billets disponibles
+  sold        Int      @default(0) // Nombre de billets vendus
+  status          TicketStatus @default(VALID) // Statut du ticket
+  emailSentTo     String    // Email auquel le ticket a été envoyé
+  pdfUrl          String?   // URL du PDF du ticket généré
+  scans           TicketScan[] // Historique des scans
+  customerId   String
+  customer     Customer  @relation(fields: [customerId], references: [id])
+  stripePaymentId String?
+  payment     Payment? // Ajout de la relation inverse avec Payment
+  createdAt   DateTime @default(now())
+}
+
+// Nouvelle table pour suivre les scans de tickets
+model TicketScan {
+  id          String    @id @default(uuid())
+  ticketId    String
+  ticket      Ticket    @relation(fields: [ticketId], references: [id])
+  scannedBy   String    // ID de l'utilisateur qui a scanné
+  scanner     User      @relation(fields: [scannedBy], references: [id])
+  location    String?   // Emplacement du scan (optionnel)
+  deviceId    String?   // Identifiant de l'appareil qui a scanné
+  isValid     Boolean   // Si le scan était valide
+  invalidReason String? // Raison si le scan était invalide
+  scannedAt   DateTime  @default(now())
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  ticketId    String   @unique // Ajout de @unique car c'est une relation one-to-one
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  amount      Float
+  currency    String   @default("CAD")
+  status      PaymentStatus
+  stripePaymentId String @unique
+  createdAt   DateTime @default(now())
+}
+
+///  Enum pour les rôles d'utilisateur
+enum Role {
+  STAFF
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+///  Enum pour le statut des paiements
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+
+// Nouveau enum pour le statut des tickets
+enum TicketStatus {
+  VALID       // Ticket valide et non utilisé
+  USED        // Ticket déjà utilisé
+  CANCELLED   // Ticket annulé
+  EXPIRED     // Ticket expiré
+}
