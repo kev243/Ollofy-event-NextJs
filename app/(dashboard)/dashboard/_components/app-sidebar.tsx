@@ -14,13 +14,13 @@ import {
 import { menu, navSecondary } from "@/lib/menu";
 import { Tickets } from "lucide-react";
 import { NavSecondary } from "./nav-secondary";
-import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-
-// Menu items.
+import { NavUser } from "./nav-user";
+import { useUser } from "@clerk/nextjs";
 
 export function AppSidebar() {
   const pathname = usePathname(); // on récupère l'URL actuelle
+  const { user } = useUser(); // on récupère le user connecter
   return (
     <Sidebar variant="inset">
       <SidebarHeader>
@@ -69,7 +69,16 @@ export function AppSidebar() {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <UserButton />
+        {user && (
+          <NavUser
+            user={{
+              name: user.fullName ?? "",
+              email:
+                user.primaryEmailAddress?.emailAddress ?? "Email not provided", // 🔹 Utilise `??` au lieu de `||`
+              avatar: user.imageUrl,
+            }}
+          />
+        )}
       </SidebarFooter>
     </Sidebar>
   );

@@ -18,7 +18,7 @@ export const menu = [
   },
   {
     title: "My Events",
-    url: "#",
+    url: "/dashboard/events",
     icon: Calendar,
   },
   {

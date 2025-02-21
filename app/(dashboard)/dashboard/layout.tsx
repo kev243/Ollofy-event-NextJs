@@ -4,6 +4,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/app-sidebar";
+import { ModeToggle } from "@/components/general/ModeToggle";
 
 export default function DashboardLayout({
   children,
@@ -16,7 +17,8 @@ export default function DashboardLayout({
       <SidebarInset>
         <main>
           <SidebarTrigger />
-          {children}
+
+          <div className="">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>
