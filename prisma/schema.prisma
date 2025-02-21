@@ -62,6 +62,7 @@ model Event {
   price        Float
   moreInfo     String? //information supplémentaire de l'événement
   organizerId  String
+  status       EventStatus @default(DRAFT) //  Ajout du statut avec valeur par défaut
   organizer    User     @relation(fields: [organizerId], references: [id])
   organizationId String?  // Un événement appartient à une organisation
   organization  Organization? @relation(fields: [organizationId], references: [id])
@@ -135,4 +136,12 @@ enum TicketStatus {
   USED        // Ticket déjà utilisé
   CANCELLED   // Ticket annulé
   EXPIRED     // Ticket expiré
+}
+
+///  Enum pour le statut de l'événement
+enum EventStatus {
+  DRAFT      // L'événement est en brouillon
+  PUBLISHED  // L'événement est visible et actif
+  CANCELLED  // L'événement a été annulé
+  COMPLETED  // L'événement est terminé
 }
