@@ -60,7 +60,10 @@ model Event {
   url          String // url de l'événement
   location     String?
   image        String? //image de l'événement
-  date         DateTime
+  startDate    DateTime // Date de début obligatoire
+  endDate      DateTime? // Date de fin optionnelle
+  startTime    String?  // Heure de début (ex: "14:00") (optionnel)
+  endTime      String?  // Heure de fin (ex: "18:00") (optionnel)
   price        Float
   moreInfo     String? //information supplémentaire de l'événement
   organizerId  String
@@ -82,6 +85,7 @@ model Ticket {
   sold        Int      @default(0) // Nombre de billets vendus
   status          TicketStatus @default(VALID) // Statut du ticket
   emailSentTo     String    // Email auquel le ticket a été envoyé
+  details    String //details du ticket
   pdfUrl          String?   // URL du PDF du ticket généré
   scans           TicketScan[] // Historique des scans
   customerId   String
