@@ -5,7 +5,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  // SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -17,10 +17,58 @@ import { NavSecondary } from "./nav-secondary";
 import { usePathname } from "next/navigation";
 import { NavUser } from "./nav-user";
 import { useUser } from "@clerk/nextjs";
+import { getOrganizationByEmail } from "@/app/actions";
+import {
+  Organization,
+  useOrganizationStore,
+} from "@/store/useOrganizationStore";
+import { useEffect, useState } from "react";
 
 export function AppSidebar() {
   const pathname = usePathname(); // on récupère l'URL actuelle
   const { user } = useUser(); // on récupère le user connecter
+  const {
+    // organizations,
+    setOrganizations,
+    activeOrganization,
+    setActiveOrganization,
+  } = useOrganizationStore();
+  const [emailUser, setEmailUser] = useState("");
+
+  // Effet pour mettre à jour l'email quand l'utilisateur change
+  useEffect(() => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      setEmailUser(user.primaryEmailAddress.emailAddress);
+    }
+  }, [user]);
+
+  // Effet pour récupérer l'organisation quand l'email change
+  useEffect(() => {
+    async function fetchOrganizations() {
+      if (emailUser) {
+        try {
+          const res = await getOrganizationByEmail(emailUser);
+
+          if (res) {
+            const organization: Organization = {
+              ...res,
+              image: res.image ?? undefined,
+            };
+            setOrganizations([organization]); // on stocke l'organisation dans un tableau
+
+            // Vérifie s'il n'y a pas déjà une organisation active
+            if (!activeOrganization && organization) {
+              setActiveOrganization(organization); // Définir l'organisation active
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching organization:", error);
+        }
+      }
+    }
+    fetchOrganizations();
+  }, [emailUser]);
+
   return (
     <Sidebar variant="inset">
       <SidebarHeader>
@@ -33,9 +81,11 @@ export function AppSidebar() {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    Organization Inc
+                    {activeOrganization?.name}
                   </span>
-                  <span className="truncate text-xs">Free</span>
+                  <span className="truncate  text-sm">
+                    {activeOrganization?.plan}
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>

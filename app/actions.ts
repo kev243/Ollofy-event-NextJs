@@ -85,3 +85,31 @@ export async function createOrganization(name: string) {
     return { error: "There was an error completing the onboarding process." };
   }
 }
+
+//fonction pour recuperer les organizations de l'utilisateur
+export async function getOrganizationByEmail(email: string) {
+  try {
+    if (!email) {
+      throw new Error("Email de l'utilisateur est requis.");
+    }
+
+    // Récupérer l'utilisateur et son organisation
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { organization: true }, // Inclure l'organisation associée
+    });
+
+    if (!user) {
+      throw new Error("Aucun utilisateur trouvé avec cet email.");
+    }
+
+    if (!user.organization) {
+      throw new Error("Cet utilisateur n'est rattaché à aucune organisation.");
+    }
+
+    return user.organization;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'organisation :", error);
+    throw error; // Relancer l'erreur pour que l'appelant puisse la gérer
+  }
+}
