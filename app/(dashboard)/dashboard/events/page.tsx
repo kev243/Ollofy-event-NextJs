@@ -11,7 +11,7 @@ export default function EventPage() {
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-3xl font-bold">Events</h1>
         <Button asChild className="flex items-center rounded-full  gap-x-2">
-          <Link href="/dashboard/products/create">
+          <Link href="/dashboard/events/new">
             <Plus />
             <span>Add Event</span>
           </Link>
