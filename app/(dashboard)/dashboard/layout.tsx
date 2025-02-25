@@ -18,7 +18,9 @@ export default function DashboardLayout({
         <main>
           <SidebarTrigger />
 
-          <div className="">{children}</div>
+          <div className="my-4 flex w-full flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-6">
+            {children}
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
