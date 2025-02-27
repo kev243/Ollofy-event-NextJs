@@ -524,7 +524,7 @@ export function EventForm() {
               variant="outline"
               // onClick={() => onSubmit(form.getValues(), "DRAFT")}
               disabled={isSubmitting}
-              className="w-full sm:w-auto"
+              className="w-full rounded-full sm:w-auto"
             >
               Enregistrer comme brouillon
             </Button>
@@ -534,7 +534,7 @@ export function EventForm() {
                 // form.handleSubmit((data) => onSubmit(data, "PUBLISHED"))()
               }}
               disabled={isSubmitting}
-              className="w-full sm:w-auto"
+              className="w-full rounded-full sm:w-auto"
             >
               {isSubmitting ? "Création en cours..." : "Publier l'événement"}
             </Button>
