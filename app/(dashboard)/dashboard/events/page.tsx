@@ -10,12 +10,12 @@ export default function EventPage() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-3xl font-bold">Events</h1>
-        <Button asChild className="flex items-center rounded-full  gap-x-2">
-          <Link href="/dashboard/events/new">
+        <Link href="/dashboard/events/new">
+          <Button className="flex items-center rounded-full gap-x-2">
             <Plus />
             <span>Add Event</span>
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className=" w-full grid grid-cols-1 lg:grid-cols-3  xl:grid-cols-4 sm:grid-cols-2 gap-5">
         <CardEvent />
