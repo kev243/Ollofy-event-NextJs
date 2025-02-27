@@ -65,6 +65,7 @@ model Event {
   startTime    String?  // Heure de début (ex: "14:00") (optionnel)
   endTime      String?  // Heure de fin (ex: "18:00") (optionnel)
   price        Float
+  currency     Currency @default(CAD) //Devise de l'événement
   moreInfo     String? //information supplémentaire de l'événement
   organizerId  String
   status       EventStatus @default(DRAFT) //  Ajout du statut avec valeur par défaut
@@ -156,4 +157,11 @@ enum Plan {
   FREE 
   PRO
   PREMIUM
+}
+
+enum Currency {
+  CAD  // Dollar canadien
+  USD  // Dollar américain
+  EUR  // Euro
+  GBP  // Livre sterling
 }
